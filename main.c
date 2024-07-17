@@ -66,7 +66,7 @@ void CreateAlphabet(char *alphabet, char *keyword)
     strupr(keyword);
 
     // Allocate memory for temporary alphabet
-    char *tempAlphabet = malloc((ALPHABET_LENGTH + strlen(keyword)) * sizeof(char));
+    char *tempAlphabet = (char *) calloc(ALPHABET_LENGTH + strlen(keyword), sizeof(char));
 
     // Combine keyword and ASCII letters within temporary alphabet
     strcpy(tempAlphabet, keyword);
@@ -91,7 +91,7 @@ void CreateAlphabet(char *alphabet, char *keyword)
 }
 
 
-const char *ShiftAlphabet(char *alphabet, int shifts)
+char *ShiftAlphabet(char *alphabet, int shifts)
 {
     // Iterations must be positive
     if (shifts < 1)
@@ -100,7 +100,7 @@ const char *ShiftAlphabet(char *alphabet, int shifts)
     }
 
     // Allocate memory and copy the given alphabet
-    char *shiftedAlphabet = malloc(ALPHABET_LENGTH * sizeof(char));
+    char *shiftedAlphabet = (char *) calloc(ALPHABET_LENGTH, sizeof(char));
     strcpy(shiftedAlphabet, alphabet);
 
     // Shift loop
@@ -143,7 +143,7 @@ void Encrypt(char *message, char *password, char *keyword)
     strupr(password); // Password needs to be uppercase too
 
     // Allocate memory for alphabet and create it
-    char *alphabet = malloc(ALPHABET_LENGTH * sizeof(char));
+    char *alphabet = (char *) calloc(ALPHABET_LENGTH, sizeof(char));
     CreateAlphabet(alphabet, keyword);
 
     // Prepare the message directly
@@ -178,7 +178,7 @@ void Decrypt(char *message, char *password, char *keyword)
     strupr(password); // Password needs to be uppercase too
 
     // Allocate memory for alphabet and create it
-    char *alphabet = malloc(ALPHABET_LENGTH * sizeof(char));
+    char *alphabet = (char *) calloc(ALPHABET_LENGTH, sizeof(char));
     CreateAlphabet(alphabet, keyword);
 
     // Main loop
