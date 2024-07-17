@@ -5,6 +5,10 @@
 #include <ctype.h>
 
 
+char LETTERS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+int ALPHABET_LENGTH = 27;
+
+
 bool IsValidParameter(char *param, bool checkAlpha)
 {
     // If null, then obviously it's not valid
@@ -36,13 +40,13 @@ bool IsValidParameter(char *param, bool checkAlpha)
 }
 
 
-int IndexOf(char *param, char character)
+int IndexOfLetter(char character)
 {
     char *c;
     int index;
 
-    c = strchr(param, character);
-    index = (int)(c - param);
+    c = strchr(LETTERS, character);
+    index = (int)(c - LETTERS);
 
     return index;
 }
@@ -54,7 +58,7 @@ void CreateAlphabet(char *alphabet, char *keyword)
     // Parameter checks for keyword
     if (!IsValidParameter(keyword, true))
     {
-        strcpy(alphabet, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        strcpy(alphabet, LETTERS);
         return;
     }
 
@@ -62,11 +66,11 @@ void CreateAlphabet(char *alphabet, char *keyword)
     strupr(keyword);
 
     // Allocate memory for temporary alphabet
-    char *tempAlphabet = malloc((27 + strlen(keyword)) * sizeof(char));
+    char *tempAlphabet = malloc((ALPHABET_LENGTH + strlen(keyword)) * sizeof(char));
 
     // Combine keyword and ASCII letters within temporary alphabet
     strcpy(tempAlphabet, keyword);
-    strcat(tempAlphabet, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    strcat(tempAlphabet, LETTERS);
 
     // Main loop
     int alphabetIndex = 0; // To ensure we correctly place characters
@@ -80,7 +84,7 @@ void CreateAlphabet(char *alphabet, char *keyword)
             alphabetIndex++;
         }
     }
-    alphabet[26] = '\0'; // Finalize the alphabet with the null terminator
+    alphabet[ALPHABET_LENGTH - 1] = '\0'; // Finalize the alphabet with the null terminator
 
     // Deallocate memory for temporary alphabet
     free(tempAlphabet);
@@ -96,7 +100,7 @@ const char *ShiftAlphabet(char *alphabet, int shifts)
     }
 
     // Allocate memory and copy the given alphabet
-    char *shiftedAlphabet = malloc(27 * sizeof(char));
+    char *shiftedAlphabet = malloc(ALPHABET_LENGTH * sizeof(char));
     strcpy(shiftedAlphabet, alphabet);
 
     // Shift loop
@@ -108,7 +112,7 @@ const char *ShiftAlphabet(char *alphabet, int shifts)
         {
             shiftedAlphabet[j-1] = shiftedAlphabet[j]; // Move character back once
         }
-        shiftedAlphabet[25] = firstCharacter; // Place the stored character at the end
+        shiftedAlphabet[ALPHABET_LENGTH - 2] = firstCharacter; // Place the stored character at the end
     }
 
     return shiftedAlphabet;
@@ -139,25 +143,28 @@ void Encrypt(char *message, char *password, char *keyword)
     strupr(password); // Password needs to be uppercase too
 
     // Allocate memory for alphabet and create it
-    char *alphabet = malloc(27 * sizeof(char));
+    char *alphabet = malloc(ALPHABET_LENGTH * sizeof(char));
     CreateAlphabet(alphabet, keyword);
 
     // Prepare the message directly
     PrepareMessage(message);
 
     // Main loop
+    char *shiftedAlphabet;
     for (int i = 0; message[i] != '\0'; i++)
     {
         // Find X and Y with given password and message
-        int x = IndexOf("ABCDEFGHIJKLMNOPQRSTUVWXYZ", password[i % strlen(password)]);
-        int y = IndexOf("ABCDEFGHIJKLMNOPQRSTUVWXYZ", message[i]);
+        int x = IndexOfLetter(password[i % strlen(password)]);
+        int y = IndexOfLetter(message[i]);
 
         // Shift alphabet
-        message[i] = ShiftAlphabet(alphabet, y)[x];
+        shiftedAlphabet = ShiftAlphabet(alphabet, y);
+        message[i] = shiftedAlphabet[x];
     }
 
     // Deallocate all variables
     free(alphabet);
+    free(shiftedAlphabet);
 }
 
 
@@ -171,20 +178,22 @@ void Decrypt(char *message, char *password, char *keyword)
     strupr(password); // Password needs to be uppercase too
 
     // Allocate memory for alphabet and create it
-    char *alphabet = malloc(27 * sizeof(char));
+    char *alphabet = malloc(ALPHABET_LENGTH * sizeof(char));
     CreateAlphabet(alphabet, keyword);
 
     // Main loop
+    char *shiftedAlphabet;
     for (int i = 0; message[i] != '\0'; i++)
     {
         // Find X and Y with given password and message
-        int x = IndexOf("ABCDEFGHIJKLMNOPQRSTUVWXYZ", password[i % strlen(password)]);
+        int x = IndexOfLetter(password[i % strlen(password)]);
 
-        for (int y = 0; y != 26; y++)
+        for (int y = 0; y != ALPHABET_LENGTH - 1; y++)
         {
-            if (ShiftAlphabet(alphabet, y)[x] == message[i])
+            shiftedAlphabet = ShiftAlphabet(alphabet, y);
+            if (shiftedAlphabet[x] == message[i])
             {
-                message[i] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[y];
+                message[i] = LETTERS[y];
                 break;
             }
         }
@@ -192,6 +201,7 @@ void Decrypt(char *message, char *password, char *keyword)
 
     // Deallocate all variables
     free(alphabet);
+    free(shiftedAlphabet);
 }
 
 
